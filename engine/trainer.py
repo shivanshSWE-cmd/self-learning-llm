@@ -170,7 +170,7 @@ class DistributedTrainer:
 
     def load_checkpoint(self, filepath: str):
         """Loads checkpoint into model and optimizer."""
-        checkpoint = torch.load(filepath, map_location=self.device)
+        checkpoint = torch.load(filepath, map_location=self.device, weights_only=False)
         raw_model = self.model.module if hasattr(self.model, "module") else self.model
         raw_model.load_state_dict(checkpoint["model_state"])
         if "optimizer_state" in checkpoint:
