@@ -1,0 +1,18 @@
+# Python / PyTorch cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+
+# Checkpoints and generated datasets
+checkpoints/
+data/*.bin
+data/*.txt
+tokenizer/vocab.json
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+*.log
