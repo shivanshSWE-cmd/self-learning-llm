@@ -22,7 +22,7 @@ def test_tokenizer():
     
     assert len(encoded) > 0, "Encoding returned empty list"
     assert decoded.strip() == text.strip(), f"Roundtrip decoding failed: '{decoded}' != '{text}'"
-    print("✓ Tokenizer test passed!")
+    print("[OK] Tokenizer test passed!")
 
 
 def test_causal_mask():
@@ -31,7 +31,7 @@ def test_causal_mask():
     assert mask.shape == (4, 4), f"Unexpected mask shape: {mask.shape}"
     assert mask[0, 1].item() is True, "Causal mask should mask out future tokens (upper triangular True)"
     assert mask[1, 0].item() is False, "Causal mask should allow past tokens (lower triangular False)"
-    print("✓ Causal mask test passed!")
+    print("[OK] Causal mask test passed!")
 
 
 if __name__ == "__main__":

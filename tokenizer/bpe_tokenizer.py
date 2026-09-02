@@ -51,10 +51,9 @@ class BPETokenizer:
         assert vocab_size >= 256 + len(self.SPECIAL_TOKENS), "vocab_size must be >= 260"
         self._init_base_vocab()
         
-        # Convert text to sequence of byte tokens
-        text_bytes = text.encode("utf-8")
-        # Split into list of individual single-byte tokens
-        sequences = [[bytes([b]) for b in text_bytes]]
+        # Split text into lines to learn subword pairs instead of document-level merges
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        sequences = [[bytes([b]) for b in line.encode("utf-8")] for line in lines]
 
         num_merges = vocab_size - len(self.vocab)
 
@@ -75,6 +74,9 @@ class BPETokenizer:
                 break
 
             new_token_bytes = best_pair[0] + best_pair[1]
+            if len(new_token_bytes) > 16:
+                # Prevent merging tokens into overly long strings
+                continue
             new_id = len(self.vocab)
 
             self.vocab[new_id] = new_token_bytes
@@ -165,8 +167,8 @@ class BPETokenizer:
         """Serializes vocabulary and merge rules to a JSON file."""
         os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
         data = {
-            "vocab": {str(k): v.latin1_decode()[0] for k, v in self.vocab.items()}, # store bytes safely
-            "merges": [[p[0].latin1_decode()[0], p[1].latin1_decode()[0]] for p in self.merges]
+            "vocab": {str(k): v.decode("latin-1") for k, v in self.vocab.items()},  # store bytes safely
+            "merges": [[p[0].decode("latin-1"), p[1].decode("latin-1")] for p in self.merges]
         }
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)

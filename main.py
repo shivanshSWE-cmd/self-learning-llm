@@ -31,6 +31,9 @@ from self_learning.replay_buffer import BaselineReplayBuffer
 
 
 def run_self_improvement_pipeline():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     print("==========================================================================")
     print("       Starting Self-Learning Autoregressive LLM System (Pure PyTorch)     ")
     print("==========================================================================")
@@ -54,10 +57,10 @@ def run_self_improvement_pipeline():
         n_kv_heads=2,  # Grouped-Query Attention (GQA ratio 2:1)
         max_seq_len=256
     )
-    data_cfg = DataConfig(seq_len=64, batch_size=4)
-    train_cfg = TrainConfig(max_steps=20, warmup_steps=5, eval_interval=5, use_amp=False)
+    data_cfg = DataConfig(seq_len=16, batch_size=4)
+    train_cfg = TrainConfig(max_steps=10, warmup_steps=2, eval_interval=2, use_amp=False)
     dpo_cfg = DPOConfig(beta=0.1, learning_rate=1e-5)
-    ewc_cfg = EWCConfig(ewc_lambda=100.0, num_fisher_samples=64)
+    ewc_cfg = EWCConfig(ewc_lambda=100.0, num_fisher_samples=16)
     self_cfg = SelfLearningConfig(num_cycles=2, prompts_per_cycle=4, candidates_per_prompt=4)
 
     # Prepare Sample Corpus & Train Tokenizer
@@ -65,17 +68,16 @@ def run_self_improvement_pipeline():
     os.makedirs(corpus_dir, exist_ok=True)
     corpus_file = os.path.join(corpus_dir, "corpus.txt")
 
-    if not os.path.exists(corpus_file):
-        sample_corpus = (
-            "Write a Python function to add two numbers.\n"
-            "def add(a, b):\n    return a + b\n\n"
-            "Explain autoregressive language models.\n"
-            "Autoregressive language models predict next tokens given previous context step by step.\n\n"
-            "Write a Python code snippet to check if a number is even.\n"
-            "def is_even(n):\n    return n % 2 == 0\n\n"
-        ) * 50
-        with open(corpus_file, "w", encoding="utf-8") as f:
-            f.write(sample_corpus)
+    sample_corpus = (
+        "Write a Python function to add two numbers.\n"
+        "def add(a, b):\n    return a + b\n\n"
+        "Explain autoregressive language models.\n"
+        "Autoregressive language models predict next tokens given previous context step by step.\n\n"
+        "Write a Python code snippet to check if a number is even.\n"
+        "def is_even(n):\n    return n % 2 == 0\n\n"
+    ) * 300
+    with open(corpus_file, "w", encoding="utf-8") as f:
+        f.write(sample_corpus)
 
     tokenizer_path = "tokenizer/vocab.json"
     print("\n--- Training BPE Tokenizer ---")
